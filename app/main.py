@@ -9,3 +9,7 @@ def read_root():
 @app.get("/add")
 def add_numbers(a: int, b: int):
     return {"result": a + b}
+
+@app.get("/multiply")
+def multiply_numbers(a: int, b: int):
+    return {"result": a * b}

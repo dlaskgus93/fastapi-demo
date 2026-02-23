@@ -17,3 +17,8 @@ def test_add_numbers():
     response = client.get("/add?a=5&b=3")
     assert response.status_code == 200
     assert response.json() == {"result": 8}
+
+def test_multiply_numbers():
+    response = client.get("/multiply?a=3&b=4")
+    assert response.status_code == 200
+    assert response.json() == {"result": 12}
