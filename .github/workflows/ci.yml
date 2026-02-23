@@ -32,13 +32,13 @@ jobs:
 
     - name: Pytest로 테스트 실행 및 커버리지 파일 생성
       run: |
-        # --cov-report=xml 옵션을 추가하여 커버리지 결과를 coverage.xml 파일로 저장합니다.
-        pytest --cov=app --cov-report=term --cov-report=xml
+        # xml이 아니라 터미널 출력 결과를 txt 파일로 저장하도록 수정합니다.
+        pytest --cov=app --cov-report=term > pytest-coverage.txt
 
     - name: 커버리지 결과를 PR 댓글과 Summary 화면에 보여주기
       uses: MishaKav/pytest-coverage-comment@main
       with:
-        # 위 단계에서 만든 xml 파일을 읽어서 예쁜 표로 만들어줍니다.
-        pytest-coverage-path: ./coverage.xml
+        # 방금 만든 txt 파일을 읽으라고 경로를 수정해 줍니다.
+        pytest-coverage-path: ./pytest-coverage.txt
         title: "✅ 테스트 커버리지 리포트"
         badge-title: "Coverage"
