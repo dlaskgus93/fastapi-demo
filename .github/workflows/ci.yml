@@ -47,14 +47,15 @@ jobs:
         title: "✅ 테스트 커버리지 리포트"
 
     - name: 6. SonarCloud 정적 코드 분석
-      uses: SonarSource/sonarcloud-github-action@master
+    # 💡 기존 sonarcloud-github-action 대신 최신 버전인 sonarqube-scan-action으로 변경했습니다.
+      uses: SonarSource/sonarqube-scan-action@v5.0.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       with:
+        # 핵심! 소나클라우드에게는 반드시 xml 파일을 먹여줍니다!
         args: >
           -Dsonar.projectKey=dlaskgus93_fastapi-demo
           -Dsonar.organization=dlaskgus93
-          # 핵심! 소나클라우드에게는 반드시 xml 파일을 먹여줍니다!
           -Dsonar.python.coverage.reportPaths=coverage.xml
           -Dsonar.sources=app/
