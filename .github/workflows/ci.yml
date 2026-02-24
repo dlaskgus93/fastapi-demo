@@ -2,7 +2,6 @@ name: FastAPI Testing CI
 
 # 메인 브랜치에 코드가 push 되거나 PR이 생성될 때 실행
 on:
-on:
   push:
     branches: [ "main", "test/sonar" ]  # 내 브랜치에 Push할 때도 액션이 돌게 하려면 추가!
   pull_request:
