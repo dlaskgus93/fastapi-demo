@@ -13,3 +13,7 @@ def add_numbers(a: int, b: int):
 @app.get("/multiply")
 def multiply_numbers(a: int, b: int):
     return {"result": a * b}
+
+@app.get("/hello")
+def say_hello():
+    return {"message": "Hello SonarCloud!"}
