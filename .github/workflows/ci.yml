@@ -59,3 +59,20 @@ jobs:
           -Dsonar.organization=dlaskgus93
           -Dsonar.python.coverage.reportPaths=coverage.xml
           -Dsonar.sources=app/
+
+    - name: 7. Push 커밋에 SonarCloud 결과 URL 댓글 달기
+      # 💡 PR이 아닌 'push' 이벤트일 때만 이 스텝을 실행합니다.
+      if: github.event_name == 'push'
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # 1. 소나클라우드 영수증 파일에서 dashboardUrl 값만 추출합니다.
+        SONAR_URL=$(grep dashboardUrl .scannerwork/report-task.txt | cut -d'=' -f2)
+        
+        # 2. 깃허브 API를 이용해 내가 방금 Push한 커밋에 강제로 댓글을 답니다.
+        gh api \
+          --method POST \
+          -H "Accept: application/vnd.github+json" \
+          /repos/${{ github.repository }}/commits/${{ github.sha }}/comments \
+          -f body="🔍 **SonarCloud 정적 분석이 완료되었습니다!**
+          👉 상세 결과 확인하기: $SONAR_URL"
