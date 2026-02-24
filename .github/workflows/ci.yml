@@ -2,11 +2,12 @@ name: FastAPI Testing CI
 
 # 메인 브랜치에 코드가 push 되거나 PR이 생성될 때 실행
 on:
+on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "test/sonar" ]  # 내 브랜치에 Push할 때도 액션이 돌게 하려면 추가!
   pull_request:
-    branches: [ "main" ]
-
+    branches: [ "main" ]                # main으로 합쳐달라는 PR이 열릴 때 작동!
+    
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -17,28 +18,44 @@ jobs:
       contents: write
 
     steps:
-    - name: 내 코드 복사해오기 (Checkout)
+    - name: 1. 내 코드 복사해오기
       uses: actions/checkout@v3
+      with:
+        # SonarCloud가 새 코드와 옛날 코드를 비교할 수 있도록 모든 깃 기록을 가져옵니다. (매주 중요!)
+        fetch-depth: 0  
 
-    - name: 파이썬 환경 설정
+    - name: 2. 파이썬 3.10 환경 설정
       uses: actions/setup-python@v4
       with:
         python-version: "3.10"
 
-    - name: 필요한 패키지 설치
+    - name: 3. 필수 패키지 설치
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        pip install -r requirements_unittest.txt
 
-    - name: Pytest로 테스트 실행 및 커버리지 파일 생성
+    - name: 4. Pytest 실행 및 2가지 커버리지 파일(xml, txt) 동시 생성
       run: |
-        # xml이 아니라 터미널 출력 결과를 txt 파일로 저장하도록 수정합니다.
-        pytest --cov=app --cov-report=term > pytest-coverage.txt
+        # --cov-report=xml 은 'coverage.xml' 파일을 조용히 만듭니다.
+        # --cov-report=term 은 결과를 터미널에 출력하는데, 그걸 '>' 기호로 txt에 저장합니다.
+        pytest --cov=app --cov-report=xml --cov-report=term > pytest-coverage.txt
 
-    - name: 커버리지 결과를 PR 댓글과 Summary 화면에 보여주기
+    - name: 5. 깃허브 화면에 간단한 커버리지 표 띄우기 (MishaKav 봇)
       uses: MishaKav/pytest-coverage-comment@main
       with:
-        # 방금 만든 txt 파일을 읽으라고 경로를 수정해 줍니다.
+        # 이 봇에게는 txt 파일을 먹여줍니다!
         pytest-coverage-path: ./pytest-coverage.txt
         title: "✅ 테스트 커버리지 리포트"
-        badge-title: "Coverage"
+
+    - name: 6. SonarCloud 정적 코드 분석
+      uses: SonarSource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      with:
+        args: >
+          -Dsonar.projectKey=dlaskgus93_fastapi-demo
+          -Dsonar.organization=dlaskgus93
+          # 핵심! 소나클라우드에게는 반드시 xml 파일을 먹여줍니다!
+          -Dsonar.python.coverage.reportPaths=coverage.xml
+          -Dsonar.sources=app/
